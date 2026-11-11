@@ -55,7 +55,7 @@ optional whether a cross-build-aware build backend defines
 ``get_host_requires_for_cross_build_wheel()``.
 
 The new hooks take a common ``build_details`` argument which is created by
-parsing the ``build_details.json`` file for the target platform.
+parsing the ``build_details.json`` file for the host platform.
 
 
 ``get_host_requires_for_cross_build_wheel``
@@ -80,7 +80,7 @@ Presence of this hook signals that the backend supports cross builds. It takes
 the same arguments as the ``build_wheel`` hook, as well as two additional
 arguments: ``build_details`` and ``host_requires_directory``. The
 ``host_requires_directory`` will be prepared by the build frontend containing
-installed copies of all the ``target_requires``.
+installed copies of all the host requirements.
 
 
 .. code:: python
@@ -95,7 +95,7 @@ The ``toolchain`` argument consists of a config object with the values of
 What a Build Frontend should Do
 -------------------------------
 
-Suppose given a target platform tag, a ``build_details.json`` file, and a project
+Suppose given a host platform tag, a ``build_details.json`` file, and a project
 directory. To cross build the project, the build frontend should do the
 following steps:
 
@@ -125,7 +125,7 @@ following steps:
 
 The `host_requires_directory` is just a directory. If the build frontend
 prefers it can be the `site-packages` inside of some cross virtual environment,
-but we do not need to execute the target packages as part of the build and there
+but we do not need to execute the host packages as part of the build and there
 is not yet a well-specified notion of a cross virtual environment.
 
 
