@@ -85,8 +85,11 @@ installed copies of all the ``target_requires``.
 
 .. code:: python
 
-    def cross_build_wheel(wheel_directory, metadata_directory=None, config_settings=None, build_details=None, host_requires_directory=None):
+    def cross_build_wheel(wheel_directory, metadata_directory=None, config_settings=None, build_details=None, host_requires_directory=None, toolchain=None):
         ...
+
+The ``toolchain`` argument consists of a config object with the values of
+``CC``, ``CXX``, ``RANLIB``, ``AR``, ``AS``, etc.
 
 
 What a Build Frontend should Do
