@@ -35,13 +35,32 @@ The ``[build-system]`` section gains a new `host-requires` field.
 Changes to the ``packaging`` package
 ------------------------------------
 
-The ``packaging.tags`` module gains a new function called
-``host_platform_tags(build_details)`` which returns an iterator over the
-platform tags that are compatible with the host platform.
+The ``packaging.tags`` module gains two new functions:
+
+``host_platform_tags(build_details)``
+    Returns an iterator over the platform tags that are compatible with the
+    host platform, in order of preference. This is the host counterpart of
+    ``packaging.tags.platform_tags()``.
+
+``host_tags(build_details)``
+    Returns an iterator over the ``(interpreter, abi, platform)`` tag triples
+    supported by the host interpreter, in order of preference. This is the
+    host counterpart of ``packaging.tags.sys_tags()``: the interpreter and ABI
+    tags are derived from the ``language``, ``implementation`` and ``abi``
+    sections of ``build_details`` and the platform tags from
+    ``host_platform_tags(build_details)``. Build frontends should use this
+    function to select wheels for host requirements, for example with
+    ``packaging.tags.create_compatible_tags_selector(host_tags(build_details))``.
+
+Neither function may consult the running interpreter or operating system; the
+result must depend only on ``build_details`` and the keyword arguments.
 
 The ``packaging.markers`` modules gains a new function called
-``host_enviornment(build_details)`` which computes an appropriate
-``packaging.markers.Environment`` for the host ``build_details``.
+``host_environment(build_details)`` which computes an appropriate
+``packaging.markers.Environment`` for the host ``build_details``. The
+``platform_release`` and ``platform_version`` entries describe the running
+kernel and cannot be determined statically, so they are set to the empty
+string.
 
 
 Changes to the PEP 517 backend Hooks
@@ -107,7 +126,7 @@ installed copies of all the host requirements.
         ...
 
 The ``toolchain`` argument consists of a config object with the values of
-``CC``, ``CXX``, ``RANLIB``, ``AR``, ``AS``, etc.
+``CC``, ``CXX``, ``RANLIB``, ``AR``, ``AS``, ``STRIP``.
 
 
 What a Build Frontend should Do
@@ -136,11 +155,11 @@ following steps:
       ``requirement.marker.evaluate(host_environment, "requirement")``. Filter
       the ``host-requirements`` list to only include the requirements that return
       ``True``.
-   f. Call ``packaging.tags.host_platform_tags(build_details)`` to get an
-      iterator over the compatible host platform tags.
-   g. For each of the host requirements, find a matching wheel with a
-      compatible platform tag and install it into the
-      `host_requires_directory`.
+   f. Call ``packaging.tags.host_tags(build_details)`` to get an iterator
+      over the tags supported by the host interpreter.
+   g. For each of the host requirements, find a wheel whose tags include one
+      of the host tags, preferring wheels matching earlier tags, and install
+      it into the `host_requires_directory`.
 4. Invoke the `cross_build_wheel()` build backend hook.
 
 The `host_requires_directory` is just a directory. If the build frontend
