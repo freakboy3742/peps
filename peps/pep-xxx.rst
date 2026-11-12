@@ -126,7 +126,11 @@ installed copies of all the host requirements.
         ...
 
 The ``toolchain`` argument consists of a config object with the values of
-``CC``, ``CXX``, ``RANLIB``, ``AR``, ``AS``, ``STRIP``.
+``CC``, ``CXX``, ``RANLIB``, ``AR``, ``AS``, ``STRIP``. It also carries the
+conventional variables describing how to locate host libraries: ``PKG_CONFIG``,
+``PKG_CONFIG_PATH``, ``PKG_CONFIG_LIBDIR`` and ``PKG_CONFIG_SYSROOT_DIR``. The
+backend MUST take this information from the ``toolchain`` argument rather than
+from its environment.
 
 
 What a Build Frontend should Do
@@ -162,10 +166,21 @@ following steps:
       it into the `host_requires_directory`.
 4. Invoke the `cross_build_wheel()` build backend hook.
 
-The `host_requires_directory` is just a directory. If the build frontend
-prefers it can be the `site-packages` inside of some cross virtual environment,
-but we do not need to execute the host packages as part of the build and there
-is not yet a well-specified notion of a cross virtual environment.
+The `host_requires_directory` is a directory laid out like a ``site-packages``
+directory. If the build frontend prefers it can be the `site-packages` inside of
+some cross virtual environment, but we do not need to execute the host packages
+as part of the build and there is not yet a well-specified notion of a cross
+virtual environment.
 
 
+Resolving Host Dependencies in the Build Backend
+------------------------------------------------
 
+The contents of the ``host_requires_directory`` are built for the host platform
+and MUST NOT be executed by the backend.
+
+When a backend resolves dependencies for the host machine using tools whose
+default search paths are those of the build machine, such as ``pkg-config``, it
+should restrict those search paths to the ``host_requires_directory``, the host
+interpreter's own files as described by ``build_details``, and whatever the
+``toolchain`` provides (``PKG_CONFIG_LIBDIR``, ``PKG_CONFIG_SYSROOT_DIR``).
